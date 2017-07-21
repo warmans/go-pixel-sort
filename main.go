@@ -67,7 +67,7 @@ func sortImage(img image.Image) image.Image {
 			curPixel := img.At(col, row)
 			chunk = append(chunk, curPixel)
 
-			if len(chunk) >= maxChunk || !threshold(curPixel.RGBA()) {
+			if len(chunk) > (maxChunk - row) || !threshold(curPixel.RGBA()) {
 
 				//sort by lightness
 				sort.Slice(chunk, func(i, j int) bool {
