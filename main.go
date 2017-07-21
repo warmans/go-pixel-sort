@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("Use a .png image, not a %s", extension)
 	}
 
-	originalImage, err := png.Decode(inFile)
+	originalImage, _, err := image.Decode(inFile)
 	if err != nil {
 		log.Fatalf("Failed to decode image at %s caused by %s", os.Args[0], err)
 	}
