@@ -15,7 +15,6 @@ import (
 var (
 	outDir    = flag.String("out.dir", "", "output directory")
 	outSuffix = flag.String("out.suffix", "sorted", "output the sorted image with the given suffix")
-	sortChunk = flag.Int("sort.chunk", -1, "size of each sorted chunk")
 )
 
 func main() {
@@ -56,10 +55,8 @@ func sortImage(img image.Image) image.Image {
 
 	outImg := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
 
-	chunkSize := *sortChunk
-	if chunkSize == -1 {
-		chunkSize = img.Bounds().Dy()
-	}
+
+	maxChunk := img.Bounds().Dy()
 
 	chunk := []color.Color{}
 	for col := 0; col < img.Bounds().Dx(); col++ {
@@ -67,8 +64,10 @@ func sortImage(img image.Image) image.Image {
 		chunk = []color.Color{}
 		for row := 0; row < img.Bounds().Dy(); row++ {
 
-			chunk = append(chunk, img.At(col, row))
-			if len(chunk) > chunkSize || (row == img.Bounds().Dy()-1 || col == img.Bounds().Dx()-1) {
+			curPixel := img.At(col, row)
+			chunk = append(chunk, curPixel)
+
+			if len(chunk) >= maxChunk || !threshold(curPixel.RGBA()) {
 
 				//sort by lightness
 				sort.Slice(chunk, func(i, j int) bool {
@@ -95,6 +94,17 @@ func lightness(r, g, b, a uint32) float64 {
 	b = b/0x101
 	a = a/0x101
 	aMod := float64(a) / 255.0
-	l := 0.2126*(float64(r) * aMod) + 0.7152*(float64(g) * aMod) + 0.0722*(float64(b)*aMod)
-	return l
+
+	return 0.2126*(float64(r) * aMod) + 0.7152*(float64(g) * aMod) + 0.0722*(float64(b)*aMod)
+}
+
+func threshold(r, g, b, a uint32) bool {
+
+	if (a/0x101) < 32 {
+		return false
+	}
+
+	l := lightness(r, g, b, a)
+
+	return l > 127 && l < 255 || l > 0 && l < 64
 }
