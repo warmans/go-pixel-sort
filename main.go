@@ -99,12 +99,10 @@ func lightness(r, g, b, a uint32) float64 {
 }
 
 func threshold(r, g, b, a uint32) bool {
-
 	if (a/0x101) < 32 {
 		return false
 	}
-
 	l := lightness(r, g, b, a)
 
-	return l > 127 && l < 255 || l > 0 && l < 64
+	return l < 64 || l > 96
 }
